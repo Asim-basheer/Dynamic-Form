@@ -118,7 +118,7 @@
     }
 
    .form-description {
-      font-size: 15px;
+      font-size: 20px;
       color: #555;
       margin-bottom: 32px;
       line-height: 1.7;
@@ -126,6 +126,8 @@
       padding: 0 10px;
       border: none;
       border-left: 5px solid #38b0a6;
+          font-weight: bold;
+
     }
      html[dir="rtl"] .form-description {
       border: none;
@@ -137,11 +139,12 @@
     }
 
     label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1a1a2e;
-      margin-bottom: 8px;
+     display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    font-weight: bold;
     }
 
     label .required-star {
@@ -257,95 +260,22 @@
       color: #1a1a2e;
     }
 
-    /* Section block (grouped checkbox table, e.g. "First Section For the Questions") */
+    /* Section grouping */
     .section-block {
       margin-bottom: 32px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #EBEBEB;
     }
 
     .section-title {
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       color: #093B6D;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       padding-inline-start: 12px;
       border-inline-start: 3px solid #093B6D;
     }
 
-    .section-table {
-      display: flex;
-      flex-direction: column;
-      border: 1.5px solid #dde1e7;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .section-row {
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #ebedf0;
-    }
-
-    .section-row:last-child {
-      border-bottom: none;
-    }
-
-    .section-row:not(.section-header-row):hover {
-      background: #f7f9fb;
-    }
-
-    .section-header-row {
-      background: #f0f4f8;
-      font-weight: 700;
-    }
-
-    .section-cell {
-      padding: 12px 14px;
-      font-size: 14px;
-      color: #1a1a2e;
-    }
-
-    .section-item-label {
-      flex: 1 1 auto;
-      text-align: start;
-    }
-
-    .section-header-row .section-item-label {
-      color: #093B6D;
-      font-weight: 700;
-    }
-
-    .section-col-label {
-      flex: 0 0 110px;
-      text-align: center;
-      color: #093B6D;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .section-checkbox-cell {
-      flex: 0 0 110px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .section-checkbox-cell input[type="checkbox"] {
-      width: 19px;
-      height: 19px;
-      accent-color: #093B6D;
-      cursor: pointer;
-    }
-
-    @media (max-width: 560px) {
-      .section-col-label, .section-checkbox-cell {
-        flex: 0 0 64px;
-      }
-      .section-cell {
-        padding: 10px 8px;
-        font-size: 13px;
-      }
+    .section-block .field-group:last-child {
+      margin-bottom: 0;
     }
 
     /* Star rating */
@@ -792,69 +722,25 @@
     }
 
     // Builds a table-style section block: a title, then a header row with the
-    // checkbox option labels, then one row per question with its text and
-    // a checkbox aligned under each option column.
+    // Groups questions under a section title, each rendered normally via buildField
     function buildSectionTable(sectionTitle, questions) {
       const wrapper = document.createElement('div');
       wrapper.className = 'section-block';
 
-      const heading = document.createElement('h3');
-      heading.className = 'section-title';
-      heading.textContent = sectionTitle;
-      wrapper.appendChild(heading);
-
-      const table = document.createElement('div');
-      table.className = 'section-table';
-
-      // Determine column labels. If the questions carry explicit "options",
-      // use their labels as columns; otherwise (plain Checkbox questions as
-      // in the current API payload) fall back to a single checkbox column.
-      const sampleOptions = questions.find(q => q.options && q.options.length > 0);
-      const columnLabels = sampleOptions ? sampleOptions.options.map(o => o.label) : [t('apply')];
-
-      const headerRow = document.createElement('div');
-      headerRow.className = 'section-row section-header-row';
-      const headerLabel = document.createElement('div');
-      headerLabel.className = 'section-cell section-item-label';
-      headerLabel.textContent = t('item');
-      headerRow.appendChild(headerLabel);
-
-      columnLabels.forEach(colLabel => {
-        const cell = document.createElement('div');
-        cell.className = 'section-cell section-col-label';
-        cell.textContent = colLabel;
-        headerRow.appendChild(cell);
-      });
-      table.appendChild(headerRow);
+      if (sectionTitle) {
+        const heading = document.createElement('h3');
+        heading.className = 'section-title';
+        heading.textContent = sectionTitle;
+        wrapper.appendChild(heading);
+      }
 
       questions.forEach(q => {
-        const row = document.createElement('div');
-        row.className = 'section-row';
-
-        const itemCell = document.createElement('div');
-        itemCell.className = 'section-cell section-item-label';
-        const req = q.required ? '<span class="required-star">*</span>' : '';
-        itemCell.innerHTML = req + q.text;
-        row.appendChild(itemCell);
-
-        if (q.options && q.options.length > 0) {
-          q.options.forEach(opt => {
-            const cell = document.createElement('div');
-            cell.className = 'section-cell section-checkbox-cell';
-            cell.innerHTML = `<input type="checkbox" id="field_${q.id}_${opt.id}" data-qid="${q.id}" data-optid="${opt.id}" />`;
-            row.appendChild(cell);
-          });
-        } else {
-          const cell = document.createElement('div');
-          cell.className = 'section-cell section-checkbox-cell';
-          cell.innerHTML = `<input type="checkbox" id="field_${q.id}" data-qid="${q.id}" ${q.required ? 'data-required="true"' : ''} />`;
-          row.appendChild(cell);
-        }
-
-        table.appendChild(row);
+        const group = document.createElement('div');
+        group.className = 'field-group';
+        group.innerHTML = buildField(q);
+        wrapper.appendChild(group);
       });
 
-      wrapper.appendChild(table);
       return wrapper;
     }
 
